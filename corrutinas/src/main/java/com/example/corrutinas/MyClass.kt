@@ -1,9 +1,7 @@
 package com.example.corrutinas
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
 import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
@@ -151,11 +149,66 @@ fun main(args: Array<String>) {
 //       println("Completed in $time ms")
 //    }
 
+//// FLOWS EN KOTLIN
+//    runBlocking {
+//        retornarPersona().collect(){
+//            println("${it.nombre} ${it.edad}")
+//        }
+//    }
+//
 
+////asFlow()
+//runBlocking {
+//    makeFlow().collect(){
+//        println(it)
+//    }
+//    //Otra forma de llamar de forma que para cada elemento se ejecuta una función
+//    //es utilizar una referencia a la función en la llamada.
+//    makeFlow().collect(::println)
+//}
 
+////Generando un Flow
+//    runBlocking {
+//        makeFlow2().collect(){
+//            println(it)
+//        }
+//    }
+//
+
+////Generando un Flow
+//    runBlocking {
+//        makeFlow3().collect(){
+//            println(it)
+//        }
+//    }
+
+////Operaciones Intermedias
+//    runBlocking {
+//        makeFlow3()
+//            .filter { it % 2 == 0  } //Nos quedamos solo con los pares
+//            .map{
+//                "Obtenido el par: $it"
+//            }
+//            .collect(){
+//                println(it)
+//                }
+//    }
+
+////StateFlow
+//    runBlocking {
+//        val viewState = ViewState()
+//        launch{
+//            viewState.startUpdating()
+//        }
+//        delay(5000) //Comenzamos a recolectar pasados 5 segundos
+//        viewState.state.collect(::println)
+//    }
+//
+
+    println("Fin del main")
 } //fin del Main
 
-
+//----------------------------------------------------------
 suspend fun espera() {
     delay(1000)
     println("Pasó un segundo")
@@ -193,5 +246,47 @@ suspend fun doSomethingUsefulOne(): Int {
 suspend fun doSomethingUsefulTwo(): Int {
     delay(1000L) // pretend we are doing something useful here, too
     return 29
+}
+
+fun makeFlow(): Flow<Int> {
+    return listOf(1,2,3,4,5).asFlow()
+}
+
+fun makeFlow2(): Flow<Int> {
+    return flow<Int>{
+        for (i in 1..10){
+            emit(i)
+        }
+    }
+}
+
+fun makeFlow3(): Flow<Int> {
+    return flow<Int>{
+        for (i in 1..20){
+            val data = GetAsyncData()
+            emit(data)
+        }
+    }
+}
+
+suspend fun GetAsyncData(): Int {
+    return withContext(Dispatchers.IO){
+        //simulamos la ejecución en el servidor
+        delay(500)
+        Random.nextInt(1, 100)
+    }
+}
+
+class ViewState(){
+    private val _state = MutableStateFlow(1)
+    val state
+        get() = _state
+
+    suspend fun startUpdating(){
+        while(true){
+            delay(2000)
+            _state.value = _state.value +1
+        }
+    }
 }
 
